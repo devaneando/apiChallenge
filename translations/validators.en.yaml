@@ -1,0 +1,9 @@
+validation:
+  error:
+    email_already_exists: A user with that email already exists!
+    email_is_blank: The email cannot be empty!
+    email_is_invalid: The email is invalid!
+    must_have_at_least_one_role: The user must have at least one role!
+    password_is_blank: The password cannot be empty!
+    the_password_is_too_weak: The password is too weak!
+    the_password_must_have_at_least_x_characters: The password must have at least {{ limit }} characters!

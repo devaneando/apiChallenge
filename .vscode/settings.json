@@ -1,0 +1,8 @@
+{
+    "php-cs-fixer.config": "/data/Development/PHP//apiChallenge/.php-cs-fixer.php",
+    "php-cs-fixer.toolPath": "/data/Development/PHP//apiChallenge/vendor/bin/php-cs-fixer",
+    "files.exclude": {
+        "**/*.cache": true,
+        "**/var": true
+    },
+}

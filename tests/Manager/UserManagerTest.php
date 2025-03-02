@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserManagerTest extends TestCase
 {
-    private\ $userManager;
+    private $userManager;
 
     private $entityManager;
 

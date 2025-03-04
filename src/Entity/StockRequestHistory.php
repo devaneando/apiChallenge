@@ -8,6 +8,7 @@ use DateTimeInterface;
 use DateTimeZone;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: StockRequestHistoryRepository::class)]
 class StockRequestHistory
@@ -20,24 +21,31 @@ class StockRequestHistory
     #[ORM\Column(length: 60)]
     private ?string $provider = null;
 
+    #[Groups(['history'])]
     #[ORM\Column(length: 60)]
     private ?string $symbol = null;
 
+    #[Groups(['history'])]
     #[ORM\Column(length: 120, nullable: true)]
     private ?string $name = null;
 
+    #[Groups(['history'])]
     #[ORM\Column(nullable: true)]
     private ?float $open = null;
 
+    #[Groups(['history'])]
     #[ORM\Column(nullable: true)]
     private ?float $high = null;
 
+    #[Groups(['history'])]
     #[ORM\Column(nullable: true)]
     private ?float $low = null;
 
+    #[Groups(['history'])]
     #[ORM\Column(nullable: true)]
     private ?float $close = null;
 
+    #[Groups(['history'])]
     #[ORM\Column(type: Types::DATETIMETZ_MUTABLE)]
     private ?DateTimeInterface $date = null;
 

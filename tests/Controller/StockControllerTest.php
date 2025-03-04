@@ -2,6 +2,7 @@
 
 namespace App\Tests\Controller;
 
+use App\Entity\StockRequestHistory;
 use App\Entity\User;
 use App\Model\StockDto;
 use App\Provider\AlphaVantageProvider;
@@ -100,5 +101,38 @@ class StockControllerTest extends WebTestCase
         $this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
         $this->assertArrayHasKey('symbol', $data);
         $this->assertEquals('AAPL', $data['symbol']);
+    }
+
+    public function testHistoryEndpointReturnsUserHistory(): void
+    {
+        $this->authenticateClient();
+
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $user = $entityManager->getRepository(User::class)->findOneBy(['email' => 'testuser@example.com']);
+
+        $history = new StockRequestHistory();
+        $history->setUser($user);
+        $history->setSymbol('AAPL');
+        $history->setName('Apple Inc.');
+        $history->setOpen(150.00);
+        $history->setHigh(155.00);
+        $history->setLow(149.00);
+        $history->setClose(152.50);
+        $history->setProvider('alpha');
+
+        $entityManager->persist($history);
+        $entityManager->flush();
+
+        $this->client->request('GET', '/history');
+
+        $response = $this->client->getResponse();
+        $data = json_decode($response->getContent(), true);
+
+        $this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertNotEmpty($data);
+        $this->assertArrayHasKey('symbol', $data[0]);
+        $this->assertEquals('AAPL', $data[0]['symbol']);
+        $this->assertArrayHasKey('date', $data[0]);
+        $this->assertMatchesRegularExpression('/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z/', $data[0]['date']);
     }
 }

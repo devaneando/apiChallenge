@@ -7,6 +7,7 @@ use App\Exceptions\UserExistsException;
 use App\Form\UserType;
 use App\Manager\UserManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
@@ -56,6 +57,7 @@ final class UserController extends AbstractController
     }
 
     #[Route('/user/{id}', name: 'api_user_view', methods: [Request::METHOD_GET], requirements: ['id' => '\d+'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function viewAction(Request $request, User $user): JsonResponse
     {
         return new JsonResponse(
@@ -65,6 +67,7 @@ final class UserController extends AbstractController
     }
 
     #[Route('user/{id}/delete', name: 'api_user_delete', methods: [Request::METHOD_DELETE], requirements: ['id' => '\d+'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function deleteAction(Request $request, User $user): JsonResponse
     {
         $this->userManager->deleteUser($user);

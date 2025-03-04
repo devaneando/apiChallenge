@@ -2,11 +2,15 @@
 
 namespace App\Tests\Provider;
 
+use App\Entity\User;
 use App\Model\StockDto;
 use App\Provider\StooqProvider;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class StooqProviderTest extends TestCase
@@ -35,7 +39,10 @@ class StooqProviderTest extends TestCase
 
         $httpClient = new MockHttpClient(fn (string $method, string $url): ResponseInterface => $mockResponse);
 
-        $this->provider = new StooqProvider($httpClient);
+        $entityManagerMock = $this->createMock(EntityManagerInterface::class);
+        $loggerMock = $this->createMock(LoggerInterface::class);
+
+        $this->provider = new StooqProvider($httpClient, $entityManagerMock, $loggerMock);
         $this->provider->setApiKey('FAKE_API_KEY');
     }
 
@@ -62,7 +69,9 @@ class StooqProviderTest extends TestCase
             ]
         ]);
 
-        $stockDto = $this->provider->process($responseJson);
+        $userMock = $this->createMock(User::class);
+
+        $stockDto = $this->provider->process($responseJson, $userMock);
 
         $this->assertInstanceOf(StockDto::class, $stockDto);
         $this->assertSame('AAPL', $stockDto->getSymbol());
@@ -75,17 +84,23 @@ class StooqProviderTest extends TestCase
 
     public function testProcessWithInvalidJsonThrowsException(): void
     {
-        $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
-        $this->provider->process('{invalid json');
+        $this->expectException(HttpException::class);
+
+        $userMock = $this->createMock(User::class);
+
+        $this->provider->process('{invalid json', $userMock);
     }
 
     public function testGetHandlesHttpError(): void
     {
         $httpClient = new MockHttpClient(fn () => new MockResponse('Error', ['http_code' => 500]));
-        $provider = new StooqProvider($httpClient);
+        $entityManagerMock = $this->createMock(EntityManagerInterface::class);
+        $loggerMock = $this->createMock(LoggerInterface::class);
+
+        $provider = new StooqProvider($httpClient, $entityManagerMock, $loggerMock);
         $provider->setApiKey('FAKE_API_KEY');
 
-        $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
+        $this->expectException(HttpException::class);
         $provider->get('AAPL');
     }
 }

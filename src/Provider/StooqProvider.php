@@ -2,6 +2,7 @@
 
 namespace App\Provider;
 
+use App\Entity\User;
 use App\Model\StockDto;
 use JsonException;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +14,7 @@ class StooqProvider extends AbstractStockProvider implements StockProviderInterf
 
     protected string $url = 'https://stooq.com/q/l/?s=%s&f=%s&h&e=json';
 
-    public function process(string $json): StockDto
+    public function process(string $json, User $user): StockDto
     {
         $content = null;
 
@@ -39,6 +40,6 @@ class StooqProvider extends AbstractStockProvider implements StockProviderInterf
             'close' => ['close', true],
         ];
 
-        return $this->processDto(toProcess:$quote, definitions: $definitions);
+        return $this->processDto(toProcess:$quote, definitions: $definitions, user: $user);
     }
 }

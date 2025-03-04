@@ -114,19 +114,4 @@ class UserManagerTest extends TestCase
         $this->assertNotNull($createdUser->getId(), 'User should have an ID after creation.');
         $this->assertEquals(1, $createdUser->getId(), 'User ID should be 1 after flush().');
     }
-
-    public function testDeleteUserRemovesAndFlushes(): void
-    {
-        $user = new User();
-        $user->setEmail('delete@example.com');
-        $user->setRoles(['ROLE_USER']);
-        $user->setPassword('SecurePass123!');
-
-        $this->entityManager->expects($this->once())->method('remove')->with($user);
-        $this->entityManager->expects($this->once())->method('flush');
-
-        $this->userManager->deleteUser($user);
-
-        $this->assertTrue(true);
-    }
 }

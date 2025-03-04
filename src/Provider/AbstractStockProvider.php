@@ -2,7 +2,11 @@
 
 namespace App\Provider;
 
+use App\Entity\StockRequestHistory;
+use App\Entity\User;
 use App\Model\StockDto;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -10,6 +14,7 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Throwable;
 
 abstract class AbstractStockProvider implements StockProviderInterface
 {
@@ -17,8 +22,11 @@ abstract class AbstractStockProvider implements StockProviderInterface
 
     protected string $url = '';
 
-    public function __construct(private readonly HttpClientInterface $httpClient)
-    {
+    public function __construct(
+        private readonly HttpClientInterface $httpClient,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly LoggerInterface $logger
+    ) {
     }
 
     public function setApiKey(string $apiKey): void
@@ -50,7 +58,7 @@ abstract class AbstractStockProvider implements StockProviderInterface
         }
     }
 
-    protected function processDto(array $toProcess, array $definitions): StockDto
+    protected function processDto(array $toProcess, array $definitions, User $user): StockDto
     {
         $model = new StockDto();
 
@@ -63,7 +71,35 @@ abstract class AbstractStockProvider implements StockProviderInterface
 
         }
 
+        $this->saveHistory($model, $user);
+
         return $model;
+    }
+
+    public function saveHistory(StockDto $dto, User $user): void
+    {
+        if (null === $dto->getOpen()) {
+            return;
+        }
+
+        $history = new StockRequestHistory();
+        $history->setSymbol($dto->getSymbol())
+            ->setName($dto->getName())
+            ->setOpen($dto->getOpen())
+            ->setHigh($dto->getHigh())
+            ->setLow($dto->getLow())
+            ->setClose($dto->getClose())
+            ->setProvider(static::IDENTIFIER)
+            ->setUser($user);
+
+        try {
+            $this->entityManager->persist($history);
+            $this->entityManager->flush();
+        } catch (Throwable $ex) {
+            $this->logger->error(
+                'Failed to write history: ' . $ex->getMessage()
+            );
+        }
 
     }
 }

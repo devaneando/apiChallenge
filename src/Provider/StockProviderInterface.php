@@ -2,6 +2,7 @@
 
 namespace App\Provider;
 
+use App\Entity\User;
 use App\Model\StockDto;
 
 interface StockProviderInterface
@@ -10,5 +11,5 @@ interface StockProviderInterface
 
     public function get(string $symbol): string;
 
-    public function process(string $json): StockDto;
+    public function process(string $json, User $user): StockDto;
 }

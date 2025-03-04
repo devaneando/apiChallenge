@@ -18,6 +18,9 @@ class StockRequestHistory
     private ?int $id = null;
 
     #[ORM\Column(length: 60)]
+    private ?string $provider = null;
+
+    #[ORM\Column(length: 60)]
     private ?string $symbol = null;
 
     #[ORM\Column(length: 120, nullable: true)]
@@ -51,6 +54,18 @@ class StockRequestHistory
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getProvider(): ?string
+    {
+        return $this->provider;
+    }
+
+    public function setProvider(string $provider): static
+    {
+        $this->provider = $provider;
+
+        return $this;
     }
 
     public function getSymbol(): ?string

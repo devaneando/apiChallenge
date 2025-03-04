@@ -5,7 +5,9 @@ namespace App\Tests\Provider;
 use App\Provider\AlphaVantageProvider;
 use App\Provider\StockProviderFactory;
 use App\Provider\StooqProvider;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -20,13 +22,18 @@ class StockProviderFactoryTest extends TestCase
 
     protected function setUp(): void
     {
+
         $mockResponse = new MockResponse('{}', ['http_code' => 200]);
+
         $httpClient = new MockHttpClient(fn (string $method, string $url): ResponseInterface => $mockResponse);
 
-        $this->alphaProvider = new AlphaVantageProvider($httpClient);
+        $entityManagerMock = $this->createMock(EntityManagerInterface::class);
+        $loggerMock = $this->createMock(LoggerInterface::class);
+
+        $this->alphaProvider = new AlphaVantageProvider($httpClient, $entityManagerMock, $loggerMock);
         $this->alphaProvider->setApiKey('FAKE_API_KEY');
 
-        $this->stooqProvider = new StooqProvider($httpClient);
+        $this->stooqProvider = new StooqProvider($httpClient, $entityManagerMock, $loggerMock);
         $this->stooqProvider->setApiKey('FAKE_API_KEY');
 
         $this->factory = new StockProviderFactory([$this->alphaProvider, $this->stooqProvider]);

@@ -2,6 +2,7 @@
 
 namespace App\Provider;
 
+use App\Entity\User;
 use App\Model\StockDto;
 use JsonException;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +14,7 @@ class AlphaVantageProvider extends AbstractStockProvider implements StockProvide
 
     protected string $url = 'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=%s&apikey=%s';
 
-    public function process(string $json): StockDto
+    public function process(string $json, User $user): StockDto
     {
         $content = null;
 
@@ -37,6 +38,6 @@ class AlphaVantageProvider extends AbstractStockProvider implements StockProvide
             'close' => ['08. previous close', true],
         ];
 
-        return $this->processDto(toProcess:$quote, definitions: $definitions);
+        return $this->processDto(toProcess:$quote, definitions: $definitions, user: $user);
     }
 }

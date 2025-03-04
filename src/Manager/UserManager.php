@@ -44,10 +44,4 @@ class UserManager
 
         return $user;
     }
-
-    public function deleteUser(User $user): void
-    {
-        $this->entityManager->remove($user);
-        $this->entityManager->flush();
-    }
 }

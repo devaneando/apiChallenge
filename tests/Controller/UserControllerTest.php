@@ -5,6 +5,7 @@ namespace App\Tests\Controller;
 use App\Entity\User;
 use App\Exceptions\UserExistsException;
 use App\Manager\UserManager;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\ConstraintViolation;
@@ -25,6 +26,42 @@ class UserControllerTest extends WebTestCase
         static::getContainer()->set(UserManager::class, $this->userManager);
     }
 
+    private function authenticateClient(): void
+    {
+        $email = 'testuser@example.com';
+        $password = 'SecurePass123!';
+
+        $entityManager = static::getContainer()->get('doctrine')->getManager();
+
+        $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+
+        if (!$existingUser) {
+            $user = new User();
+            $user->setEmail($email);
+            $user->setRoles(['ROLE_USER']);
+            $user->setPassword(password_hash($password, \PASSWORD_BCRYPT));
+
+            $entityManager->persist($user);
+            $entityManager->flush();
+        }
+
+        $this->client->request('POST', '/login', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'email' => $email,
+            'password' => $password
+        ]));
+
+        $response = $this->client->getResponse();
+        $data = json_decode($response->getContent(), true);
+
+        if (!isset($data['token'])) {
+            throw new Exception('Failed to retrieve JWT token. Response: ' . $response->getContent());
+        }
+
+        $this->client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $data['token']);
+    }
+
     public function testCreateUserSuccessfully(): void
     {
         $mail = $this->generateUniqueEmail();
@@ -36,7 +73,7 @@ class UserControllerTest extends WebTestCase
 
         $this->userManager->method('createUser')->willReturn($user);
 
-        $this->client->request('POST', '/api/v01/user/create', [], [], [
+        $this->client->request('POST', '/user/register', [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'email' => $mail,
@@ -54,7 +91,7 @@ class UserControllerTest extends WebTestCase
 
     public function testCreateUserWithValidationErrors(): void
     {
-        $this->client->request('POST', '/api/v01/user/create', [], [], [
+        $this->client->request('POST', '/user/register', [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'email' => '',
@@ -77,10 +114,10 @@ class UserControllerTest extends WebTestCase
         $this->userManager->method('createUser')
             ->willThrowException(new UserExistsException('User already exists.'));
 
-        $this->client->request('POST', '/api/v01/user/create', [], [], [
+        $this->client->request('POST', '/user/register', [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
-            'email' => $mail ,
+            'email' => $mail,
             'roles' => ['ROLE_USER'],
             'password' => 'SecurePass123!',
         ]));
@@ -115,7 +152,7 @@ class UserControllerTest extends WebTestCase
         $this->userManager->method('createUser')
             ->willThrowException(new ValidationFailedException($user, $violations));
 
-        $this->client->request('POST', '/api/v01/user/create', [], [], [
+        $this->client->request('POST', '/user/register', [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'email' => $mail,
@@ -135,14 +172,16 @@ class UserControllerTest extends WebTestCase
         $mail = $this->generateUniqueEmail();
 
         $user = new User();
-        $user->setEmail($mail );
+        $user->setEmail($mail);
         $user->setRoles(['ROLE_USER']);
         $user->setPassword('SecurePass123!');
 
         static::getContainer()->get('doctrine')->getManager()->persist($user);
         static::getContainer()->get('doctrine')->getManager()->flush();
 
-        $this->client->request('GET', '/api/v01/admin/user/' . $user->getId(), [], [], [
+        $this->authenticateClient();
+
+        $this->client->request('GET', '/user/' . $user->getId(), [], [], [
             'CONTENT_TYPE' => 'application/json',
         ]);
 
@@ -151,31 +190,6 @@ class UserControllerTest extends WebTestCase
 
         $this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
         $this->assertEquals($mail, $data['email']);
-    }
-
-    public function testDeleteUserSuccessfully(): void
-    {
-        $mail = $this->generateUniqueEmail();
-
-        $user = new User();
-        $user->setEmail($mail );
-        $user->setRoles(['ROLE_USER']);
-        $user->setPassword('SecurePass123!');
-
-        static::getContainer()->get('doctrine')->getManager()->persist($user);
-        static::getContainer()->get('doctrine')->getManager()->flush();
-
-        $this->userManager->expects($this->once())->method('deleteUser')->with($user);
-
-        $this->client->request('DELETE', '/api/v01/admin/user/' . $user->getId() . '/delete', [], [], [
-            'CONTENT_TYPE' => 'application/json',
-        ]);
-
-        $response = $this->client->getResponse();
-        $data = json_decode($response->getContent(), true);
-
-        $this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
-        $this->assertEquals('User deleted!', $data['message']);
     }
 
     private function generateUniqueEmail(): string

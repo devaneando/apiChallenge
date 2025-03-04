@@ -65,15 +65,4 @@ final class UserController extends AbstractController
             json: true
         );
     }
-
-    #[Route('user/{id}/delete', name: 'api_user_delete', methods: [Request::METHOD_DELETE], requirements: ['id' => '\d+'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function deleteAction(Request $request, User $user): JsonResponse
-    {
-        $this->userManager->deleteUser($user);
-
-        return $this->json([
-            'message' => 'User deleted!',
-        ], JsonResponse::HTTP_OK);
-    }
 }

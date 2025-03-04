@@ -19,6 +19,7 @@ final class Version20250304122044 extends AbstractMigration
         $this->addSql('
             CREATE TABLE stock_request_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                provider VARCHAR(60) NOT NULL,
                 user_id INTEGER NOT NULL,
                 symbol VARCHAR(60) NOT NULL,
                 name VARCHAR(120) DEFAULT NULL,

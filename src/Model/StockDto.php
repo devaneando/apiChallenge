@@ -2,7 +2,6 @@
 
 namespace App\Model;
 
-// NVFA,IBM
 class StockDto
 {
     private ?string $name = null;
@@ -16,6 +15,18 @@ class StockDto
     private ?float $low = null;
 
     private ?float $close = null;
+
+    public static function fromArray(array $data): self
+    {
+        $dto = new self();
+        foreach ($data as $key => $value) {
+            if (property_exists($dto, $key)) {
+                $dto->$key = $value;
+            }
+        }
+
+        return $dto;
+    }
 
     public function getName(): ?string
     {
@@ -87,5 +98,10 @@ class StockDto
         $this->close = $close;
 
         return $this;
+    }
+
+    public function toArray(): array
+    {
+        return array_filter(get_object_vars($this), fn ($value) => null !== $value);
     }
 }

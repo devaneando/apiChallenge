@@ -19,6 +19,8 @@ JWT_PASSPHRASE=xxx
 API_KEY_ALPHAVANTAGE=xxx
 API_KEY_STOOQ=xxx
 JWT_PASSPHRASE=xxx
+SENDER_EMAIL=xxx
+SENDER_NAME=xxx
 ~~~
 
 Replace xxx as you need.
@@ -59,6 +61,24 @@ curl --location 'http://127.0.0.1:8000/user/2' \
 ~~~
 
 Use any endpoint you want.
+
+**Important!**
+
+After each call of the `/stock` endpoint, a email message will be added to the queue to be delivered to the customer.
+
+To ensure the email is delivered, execute the `bin/console app:send-emails` command or configure it as a cronjob.
+
+## Commands
+
+### app:send-emails
+
+This command sends the emails to the customers.
+
+Example usage:
+
+~~~bash
+php bin/console app:send-emails
+~~~
 
 ## Endpoints
 
@@ -138,21 +158,6 @@ Example response:
 }
 ~~~
 
-### /user/{id}/delete
-
-This endpoint deletes an existing user.
-It's **private**.
-
-<http://127.0.0.1:8000/user/{id}/delete>
-
-Example response:
-
-~~~json
-{
-    "message": "User deleted!"
-}
-~~~
-
 ### /stock
 
 This endpoint shows the stock details for a given symbol.
@@ -181,3 +186,34 @@ Example response:
 + **provider**: the provider to be user (**optional**)
     + Ex.: alpha (Defaults to alpha, but the possible options are "alpha" or "stooq").
     + <http://127.0.0.1:8000/stock?q=IBM&provider=alpha>
+
+### /history
+
+This endpoint shows the request history of the the user.
+It's **private**.
+
+<http://127.0.0.1:8000/history>
+
+Example response:
+
+~~~json
+[
+    {
+        "symbol": "IBM",
+        "name": "IBM",
+        "open": 248.75,
+        "high": 255.48,
+        "low": 248.1,
+        "close": 248.1,
+        "date": "2025-03-05T08:02:00Z"
+    },
+    {
+        "symbol": "IBM",
+        "name": "IBM",
+        "open": 248.75,
+        "high": 255.48,
+        "low": 248.1,
+        "close": 248.1,
+        "date": "2025-03-05T08:00:46Z"
+    }
+~~~

@@ -4,6 +4,7 @@ namespace App\Provider;
 
 use App\Entity\StockRequestHistory;
 use App\Entity\User;
+use App\Manager\QueueManager;
 use App\Model\StockDto;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -25,7 +26,8 @@ abstract class AbstractStockProvider implements StockProviderInterface
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly EntityManagerInterface $entityManager,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly QueueManager $queueManager
     ) {
     }
 
@@ -72,6 +74,7 @@ abstract class AbstractStockProvider implements StockProviderInterface
         }
 
         $this->saveHistory($model, $user);
+        $this->queueManager->addToQueue($model, $user);
 
         return $model;
     }

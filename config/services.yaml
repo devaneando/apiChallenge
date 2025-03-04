@@ -6,6 +6,8 @@
 parameters:
     api_key_alphavantage: '%env(API_KEY_ALPHAVANTAGE)%'
     api_key_stooq: '%env(API_KEY_STOOQ)%'
+    sender_email: '%env(SENDER_EMAIL)%'
+    sender_name: '%env(SENDER_NAME)%'
 
 services:
     # default configuration for services in *this* file
@@ -44,3 +46,9 @@ services:
         calls:
             - setApiKey: ['%api_key_stooq%']
         tags: ['stock_provider']
+
+    App\Manager\QueueManager:
+        class: App\Manager\QueueManager
+        calls:
+            - setSenderMail: ['%sender_email%']
+            - setSenderName: ['%sender_name%']

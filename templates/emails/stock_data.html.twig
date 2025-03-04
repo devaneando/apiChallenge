@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ 'email.subject'|trans }}</title>
+</head>
+<body>
+    <p>{{ 'email.dear_customer'|trans }},</p>
+    <p>{{ stock.name }} {{ 'email.stock_update'|trans }}</p>
+    <ul>
+        <li>{{ 'email.open'|trans }}:  {{ stock.open }}</li>
+        <li>{{ 'email.high'|trans }}  {{ stock.High }}</li>
+        <li>{{ 'email.low'|trans }}:   {{ stock.low }}</li>
+        <li>{{ 'email.close'|trans }}: {{ stock.close }}</li>
+    </ul>
+    <p>{{ 'email.thank_you'|trans }}</p>
+</body>
+</html>

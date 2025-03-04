@@ -1,0 +1,9 @@
+email:
+  close: Close price
+  dear_customer: Dear customer
+  high: High price
+  low: Low price
+  open: Open price
+  stock_update: "stock update: Check the latest changes."
+  subject: Stock Quote Information
+  thank_you: Thank you!

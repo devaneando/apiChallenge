@@ -8,7 +8,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserTest extends KernelTestCase
 {
-
     private ValidatorInterface $validator;
 
     protected function setUp(): void

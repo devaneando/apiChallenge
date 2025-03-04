@@ -24,7 +24,7 @@ final class UserController extends AbstractController
 
     }
 
-    #[Route('/api/v01/user/create', name: 'api_user_create', methods: Request::METHOD_POST)]
+    #[Route('/user/register', name: 'api_user_register', methods: Request::METHOD_POST)]
     public function createAction(Request $request): JsonResponse
     {
         $user = new User();
@@ -55,7 +55,7 @@ final class UserController extends AbstractController
         }
     }
 
-    #[Route('/api/v01/admin/user/{id}', name: 'api_user_view', methods: [Request::METHOD_GET], requirements: ['id' => '\d+'])]
+    #[Route('/user/{id}', name: 'api_user_view', methods: [Request::METHOD_GET], requirements: ['id' => '\d+'])]
     public function viewAction(Request $request, User $user): JsonResponse
     {
         return new JsonResponse(
@@ -64,7 +64,7 @@ final class UserController extends AbstractController
         );
     }
 
-    #[Route('/api/v01/admin/user/{id}/delete', name: 'api_user_delete', methods: [Request::METHOD_DELETE], requirements: ['id' => '\d+'])]
+    #[Route('user/{id}/delete', name: 'api_user_delete', methods: [Request::METHOD_DELETE], requirements: ['id' => '\d+'])]
     public function deleteAction(Request $request, User $user): JsonResponse
     {
         $this->userManager->deleteUser($user);

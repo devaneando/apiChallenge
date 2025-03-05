@@ -91,6 +91,10 @@ or configure it as a cron job.
 
 You can check the emails by opening <http://localhost:8025> in your browser.
 
+## Postman collection
+
+You can import the endpoint collection to Postman using the `postman_collection.json` file.
+
 ## Commands
 
 ### app:send-emails

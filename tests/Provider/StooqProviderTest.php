@@ -3,6 +3,7 @@
 namespace App\Tests\Provider;
 
 use App\Entity\User;
+use App\Manager\QueueManager;
 use App\Model\StockDto;
 use App\Provider\StooqProvider;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,6 +17,14 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 class StooqProviderTest extends TestCase
 {
     private StooqProvider $provider;
+
+    private MockHttpClient $httpClient;
+
+    private EntityManagerInterface $entityManagerMock;
+
+    private LoggerInterface $loggerMock;
+
+    private QueueManager $queueManagerMock;
 
     protected function setUp(): void
     {
@@ -37,12 +46,17 @@ class StooqProviderTest extends TestCase
             'headers' => ['Content-Type' => 'application/json']
         ]);
 
-        $httpClient = new MockHttpClient(fn (string $method, string $url): ResponseInterface => $mockResponse);
+        $this->httpClient = new MockHttpClient(fn (string $method, string $url): ResponseInterface => $mockResponse);
+        $this->entityManagerMock = $this->createMock(EntityManagerInterface::class);
+        $this->loggerMock = $this->createMock(LoggerInterface::class);
+        $this->queueManagerMock = $this->createMock(QueueManager::class);
 
-        $entityManagerMock = $this->createMock(EntityManagerInterface::class);
-        $loggerMock = $this->createMock(LoggerInterface::class);
-
-        $this->provider = new StooqProvider($httpClient, $entityManagerMock, $loggerMock);
+        $this->provider = new StooqProvider(
+            $this->httpClient,
+            $this->entityManagerMock,
+            $this->loggerMock,
+            $this->queueManagerMock
+        );
         $this->provider->setApiKey('FAKE_API_KEY');
     }
 
@@ -85,19 +99,20 @@ class StooqProviderTest extends TestCase
     public function testProcessWithInvalidJsonThrowsException(): void
     {
         $this->expectException(HttpException::class);
-
         $userMock = $this->createMock(User::class);
-
         $this->provider->process('{invalid json', $userMock);
     }
 
     public function testGetHandlesHttpError(): void
     {
         $httpClient = new MockHttpClient(fn () => new MockResponse('Error', ['http_code' => 500]));
-        $entityManagerMock = $this->createMock(EntityManagerInterface::class);
-        $loggerMock = $this->createMock(LoggerInterface::class);
 
-        $provider = new StooqProvider($httpClient, $entityManagerMock, $loggerMock);
+        $provider = new StooqProvider(
+            $httpClient,
+            $this->entityManagerMock,
+            $this->loggerMock,
+            $this->queueManagerMock
+        );
         $provider->setApiKey('FAKE_API_KEY');
 
         $this->expectException(HttpException::class);

@@ -11,6 +11,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: QueueMessageRepository::class)]
+#[ORM\Table(name: 'queue_messages')]
 class QueueMessage
 {
     public const STATUS_PENDING = 0;

@@ -28,5 +28,9 @@
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
 
+docker/.env
+docker/logs/*
+!docker/logs/.gitkeep
+
 config/jwt/*
 !config/jwt/.gitkeep
